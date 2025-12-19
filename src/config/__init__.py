@@ -1,0 +1,1 @@
+# Configuration module for pharma intelligence chatbot
