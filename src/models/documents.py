@@ -313,5 +313,95 @@ class DrugShortageDocument:
         return doc
 
 
+@dataclass
+class PipelineDrugDocument:
+    """
+    Data model for pharmaceutical pipeline drug information.
+    
+    Represents drug candidates in various stages of development with
+    therapy area classification and indication details.
+    """
+    drug_name: str
+    therapy_area: str
+    development_phase: str
+    indications: List[str] = field(default_factory=list)
+    molecule_type: str = ""
+    mechanism_of_action: str = ""
+    partner: str = ""
+    additional_info: Dict[str, Any] = field(default_factory=dict)
+    source_url: str = ""
+    source: str = "AstraZeneca Pipeline"
+    scraped_at: str = ""
+
+    def validate_data_integrity(self) -> bool:
+        """
+        Validate the integrity of the pipeline drug document data.
+        
+        Returns:
+            bool: True if data passes validation checks
+            
+        Raises:
+            ValueError: If critical validation fails
+        """
+        if not self.drug_name or not self.drug_name.strip():
+            raise ValueError("Pipeline drug document must have a non-empty drug name")
+            
+        if not self.therapy_area or not self.therapy_area.strip():
+            raise ValueError("Pipeline drug document must have a therapy area")
+            
+        if not self.development_phase or not self.development_phase.strip():
+            raise ValueError("Pipeline drug document must have a development phase")
+            
+        if self.source_url and not (self.source_url.startswith('http://') or 
+                                    self.source_url.startswith('https://')):
+            raise ValueError(f"Invalid source URL format: {self.source_url}")
+            
+        return True
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the document to a dictionary for serialization."""
+        return {
+            'drug_name': self.drug_name,
+            'therapy_area': self.therapy_area,
+            'development_phase': self.development_phase,
+            'indications': self.indications,
+            'molecule_type': self.molecule_type,
+            'mechanism_of_action': self.mechanism_of_action,
+            'partner': self.partner,
+            'additional_info': self.additional_info,
+            'source_url': self.source_url,
+            'source': self.source,
+            'scraped_at': self.scraped_at
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'PipelineDrugDocument':
+        """
+        Create a PipelineDrugDocument from a dictionary.
+        
+        Args:
+            data: Dictionary containing pipeline drug data
+            
+        Returns:
+            PipelineDrugDocument: Validated pipeline drug document instance
+        """
+        doc = cls(
+            drug_name=data.get('drug_name', ''),
+            therapy_area=data.get('therapy_area', ''),
+            development_phase=data.get('development_phase', ''),
+            indications=data.get('indications', []),
+            molecule_type=data.get('molecule_type', ''),
+            mechanism_of_action=data.get('mechanism_of_action', ''),
+            partner=data.get('partner', ''),
+            additional_info=data.get('additional_info', {}),
+            source_url=data.get('source_url', ''),
+            source=data.get('source', 'AstraZeneca Pipeline'),
+            scraped_at=data.get('scraped_at', '')
+        )
+        
+        doc.validate_data_integrity()
+        return doc
+
+
 # Type aliases for convenience
-DocumentType = Union[NewsDocument, DrugShortageDocument]
+DocumentType = Union[NewsDocument, DrugShortageDocument, PipelineDrugDocument]
